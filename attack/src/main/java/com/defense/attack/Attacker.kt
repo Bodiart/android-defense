@@ -16,8 +16,11 @@ object Attacker {
     private val tag = Attacker::class.java.simpleName
 
     private var attackJob: Job? = null
+    private var isEnabled = false
 
     private var websitesAndProxies: List<WebsiteAndProxies> = listOf()
+
+    var attackEnableStatusCallback: (Boolean) -> Unit = {}
 
     var websitesGetFailedCallback: (Throwable) -> Unit = {}
     var websitesEmptyCallback: () -> Unit = {}
@@ -30,9 +33,13 @@ object Attacker {
         asyncRequestCount: Int,
         delayBetweenAllThreadsExecutedMillis: Long
     ): Job {
+        setEnabled(true)
         return coroutineScope.launch {
             // setup websites and proxies
-            setupWebsitesAndProxies()
+            if (!setupWebsitesAndProxies()) {
+                setEnabled(false)
+                return@launch
+            }
             // start attack for websites
             websitesAndProxies.forEach { websiteAndProxies ->
                 performAttackForWebsite(
@@ -45,6 +52,10 @@ object Attacker {
             }
 
         }.apply { attackJob = this }
+    }
+
+    fun stopAttack() {
+        setEnabled(false)
     }
 
     /**
@@ -109,6 +120,15 @@ object Attacker {
                 Log.d(tag, "request failed code=${throwable.message} url=${website.url} proxy=${proxy?.url}:${proxy?.port}")
             }
         )
+    }
+
+    private fun setEnabled(enabled: Boolean) {
+        isEnabled = enabled
+        attackEnableStatusCallback(isEnabled)
+        if (!isEnabled) {
+            attackJob?.cancel()
+            attackJob = null
+        }
     }
 
 }

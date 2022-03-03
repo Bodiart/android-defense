@@ -27,6 +27,8 @@ class AttackUseCase {
                     break
                 }
 
+                Log.d(tag, "***start async requests")
+
                 (0 until asyncRequestCount).map {
                     async {
                         val proxy = getProxy(config.proxies, config.url)
