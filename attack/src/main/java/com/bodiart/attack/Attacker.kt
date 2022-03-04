@@ -70,7 +70,13 @@ object Attacker {
 
         // remove website if proxies list is empty
         websitesAndProxies = ArrayList(websitesAndProxies).apply {
-            removeIf { it.proxies.isEmpty() }
+            removeIf {
+                it.proxies.isEmpty().apply {
+                    if (this) {
+                        Log.d(tag, "removing website from list, proxy list is empty")
+                    }
+                }
+            }
         }
 
         // check is websites empty

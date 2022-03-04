@@ -60,19 +60,25 @@ class MainPresenter {
     }
 
     private fun attackerEnableStatusChanged(enabled: Boolean) {
-        isAttackerEnabled = enabled
-        view?.setAttackBtnText(
-            if (enabled) R.string.main_stop_attack else R.string.main_start_attack
-        )
-        view?.setLoading(enabled)
+        uiScope.launch { // go to main thread for sure
+            isAttackerEnabled = enabled
+            view?.setAttackBtnText(
+                if (enabled) R.string.main_stop_attack else R.string.main_start_attack
+            )
+            view?.setLoading(enabled)
+        }
     }
 
     private fun attackerWebsitesEmpty() {
-        view?.showError(R.string.main_websites_empty)
+        uiScope.launch { // go to main thread for sure
+            view?.showError(R.string.main_websites_empty)
+        }
     }
 
     private fun attackerWebsitesGetFailed() {
-        view?.showError(R.string.main_websites_get_failed)
+        uiScope.launch { // go to main thread for sure
+            view?.showError(R.string.main_websites_get_failed)
+        }
     }
 
     private fun attackerHandleRequestResponse(response: RequestResponse) {
