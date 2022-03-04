@@ -14,3 +14,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "android-defense"
 include ':app'
+include ':attack'

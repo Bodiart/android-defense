@@ -1,3 +1,8 @@
 <resources>
-    <string name="app_name">android-defense</string>
+    <string name="app_name">Defense</string>
+    <string name="main_start_attack">Почати атаку</string>
+    <string name="main_stop_attack">Зупинити атаку</string>
+    <string name="main_websites_empty">Не вдалося знайти сайти для атаки</string>
+    <string name="main_websites_get_failed">Не вдалося дістати сайти для атаки</string>
+    <string name="main_attack_statistic">Сайт: %s\nКількість атак: %s</string>
 </resources>
