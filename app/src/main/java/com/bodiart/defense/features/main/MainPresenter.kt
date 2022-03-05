@@ -4,8 +4,10 @@ import androidx.annotation.StringRes
 import com.bodiart.attack.Attacker
 import com.bodiart.attack.model.entity.data.RequestResponse
 import com.bodiart.defense.R
-import com.bodiart.defense.features.main.adapter.StatisticItem
-import com.bodiart.defense.model.entity.AttackerStatistic
+import com.bodiart.defense.model.entity.AttacksStatistic
+import com.bodiart.defense.model.settings.AttackMode
+import com.bodiart.defense.model.usecase.AttackSettingsGetUseCase
+import com.bodiart.defense.model.usecase.AttackSettingsSetUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -19,16 +21,22 @@ class MainPresenter {
     private val jobComposite = Job()
     private val uiScope = CoroutineScope(Dispatchers.Main + jobComposite)
 
-    private var attackMode = AttackMode.NORMAL
-
-    private val statistics = AttackerStatistic()
+    private val attackSettingsGetUseCase = AttackSettingsGetUseCase()
+    private val attackSettingsSetUseCase = AttackSettingsSetUseCase()
+    private var attackMode = attackSettingsGetUseCase.perform()
+    private var statistic: AttacksStatistic? = null
 
 
     fun attachView(view: View) {
         this.view = view
+
+        setupAttackMode()
+
         subscribeToAttacker()
 
+        showStatistics()
         view.setLoading(false)
+
     }
 
     fun detachView() {
@@ -42,6 +50,8 @@ class MainPresenter {
             Attacker.stopAttack()
             showStatistics()
         } else {
+            resetStatistic()
+            showStatistics()
             Attacker.startAttack(
                 uiScope,
                 attackMode.asyncRequestCount,
@@ -50,13 +60,20 @@ class MainPresenter {
         }
     }
 
+    fun changeSettingsClicked() {
+        view?.showChangeSettingsDialog(
+            AttackMode.values().toList(),
+            AttackMode.values().indexOf(attackMode)
+        )
+    }
+
+    fun settingsModeSelected(selectedMode: AttackMode) {
+        attackSettingsSetUseCase.perform(selectedMode)
+        setupAttackMode()
+    }
+
     private fun showStatistics() {
-        statistics.getStatistics().map {
-            StatisticItem(
-                it.key,
-                it.value.size
-            )
-        }.let { view?.showStatistics(it) }
+        view?.showStatistic(statistic)
     }
 
     private fun attackerEnableStatusChanged(enabled: Boolean) {
@@ -75,6 +92,12 @@ class MainPresenter {
         }
     }
 
+    private fun attackerWebsitesGetSuccess(url: String) {
+        uiScope.launch {
+            statistic = AttacksStatistic(url)
+        }
+    }
+
     private fun attackerWebsitesGetFailed() {
         uiScope.launch { // go to main thread for sure
             view?.showError(R.string.main_websites_get_failed)
@@ -83,13 +106,13 @@ class MainPresenter {
 
     private fun attackerHandleRequestResponse(response: RequestResponse) {
         uiScope.launch { // go to main thread for sure
-            statistics.websiteAttacked(response.url, response)
+            statistic?.websiteAttacked(response, null)
         }
     }
 
     private fun attackerHandleRequestError(url: String, throwable: Throwable) {
         uiScope.launch { // go to main thread for sure
-            statistics.websiteAttacked(url, null)
+            statistic?.websiteAttacked(null, throwable)
         }
     }
 
@@ -101,37 +124,38 @@ class MainPresenter {
 
     private fun subscribeToAttacker(){
         Attacker.attackEnableStatusCallback = { attackerEnableStatusChanged(it) }
-        Attacker.websitesEmptyCallback = { attackerWebsitesEmpty() }
-        Attacker.websitesGetFailedCallback = { attackerWebsitesGetFailed() }
+        Attacker.websiteEmptyCallback = { attackerWebsitesEmpty() }
+        Attacker.websiteGetSuccessCallback = { attackerWebsitesGetSuccess(it) }
+        Attacker.websiteGetFailedCallback = { attackerWebsitesGetFailed() }
         Attacker.handleRequestResponseCallback = { attackerHandleRequestResponse(it) }
         Attacker.handleRequestErrorCallback = { url, throwable -> attackerHandleRequestError(url, throwable) }
         Attacker.allThreadExecutedCallback = { attackerAllThreadsForWebsiteExecuted(it) }
     }
 
     private fun unsubscribeFromAttacker() {
-        Attacker.attackEnableStatusCallback = {}
-        Attacker.websitesEmptyCallback = {}
-        Attacker.websitesGetFailedCallback = {}
-        Attacker.handleRequestResponseCallback = {}
-        Attacker.handleRequestErrorCallback = { _, _ -> }
-        Attacker.allThreadExecutedCallback = {}
+        Attacker.attackEnableStatusCallback = null
+        Attacker.websiteEmptyCallback = null
+        Attacker.websiteGetFailedCallback = null
+        Attacker.handleRequestResponseCallback = null
+        Attacker.handleRequestErrorCallback = null
+        Attacker.allThreadExecutedCallback = null
+    }
+
+    private fun resetStatistic() {
+        statistic = null
+    }
+
+    private fun setupAttackMode() {
+        attackMode = attackSettingsGetUseCase.perform()
+        view?.setSettingsModeName(attackMode.nameResId)
     }
 
     interface View {
         fun setAttackBtnText(@StringRes textResId: Int)
         fun showError(@StringRes errorResId: Int)
         fun setLoading(isLoadingVisible: Boolean)
-        fun showStatistics(statistics: List<StatisticItem>)
-    }
-
-    enum class AttackMode(
-        val asyncRequestCount: Int,
-        val delayBetweenAllThreadsExecutedMillis: Long
-    ) {
-        EASY(1, 3000),
-        NORMAL(3, 3000),
-        MEDIUM(5, 3000),
-        HARD(10, 3000),
-        MAX(10, 1000);
+        fun showStatistic(statistic: AttacksStatistic?)
+        fun setSettingsModeName(@StringRes nameResId: Int)
+        fun showChangeSettingsDialog(items: List<AttackMode>, checkedItemIndex: Int)
     }
 }

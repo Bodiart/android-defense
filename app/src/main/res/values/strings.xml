@@ -5,4 +5,15 @@
     <string name="main_websites_empty">Не вдалося знайти сайти для атаки</string>
     <string name="main_websites_get_failed">Не вдалося дістати сайти для атаки</string>
     <string name="main_attack_statistic">Сайт: %s\nКількість атак: %s</string>
+    <string name="main_statistic_website">Сайт: %s</string>
+    <string name="main_statistic_attacks_count">Кількість атак: %s</string>
+    <string name="main_statistic_success_attacks">Успішні запити: %s</string>
+    <string name="main_statistic_fail_attacks">Неуспішні запити: %s</string>
+    <string name="main_settings">Змінити навантаження\n(%s)</string>
+    <string name="main_settings_easy">Легке</string>
+    <string name="main_settings_normal">Нормальне</string>
+    <string name="main_settings_medium">Середнє</string>
+    <string name="main_settings_hard">Високе</string>
+    <string name="main_settings_max">Максимальне</string>
+    <string name="main_settings_dialog_title">Змінити навантаження на смартфон</string>
 </resources>
