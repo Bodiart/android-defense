@@ -12,51 +12,51 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:indeterminate="true"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/bottomLayout"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <include
         android:id="@+id/statisticInclude"
         layout="@layout/view_statistic"
-        android:visibility="visible"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
         android:id="@+id/bottomLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintStart_toStartOf="parent">
 
         <View
             android:id="@+id/separator"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="#E4E4E4"/>
+            android:background="#E4E4E4" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/changeSettingsBtn"
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="match_parent"
-            android:textAllCaps="false"
             android:layout_height="wrap_content"
-            android:text="@string/main_settings"/>
+            android:text="@string/main_settings"
+            android:textAllCaps="false" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/attackBtn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAllCaps="false"
             android:layout_margin="16dp"
-            android:text="@string/main_start_attack"/>
+            android:text="@string/main_start_attack"
+            android:textAllCaps="false" />
 
     </LinearLayout>
 
