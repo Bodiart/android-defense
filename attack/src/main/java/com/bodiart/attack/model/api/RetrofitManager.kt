@@ -47,7 +47,6 @@ object RetrofitManager {
                 level = HttpLoggingInterceptor.Level.BODY
             }
         )
-//        AllowHttp().allowHttp(this)
         allowHttp()
         build()
     }
@@ -61,13 +60,15 @@ object RetrofitManager {
         // add proxy if exists
         proxyInfo?.let { proxy ->
             proxy(Proxy(Proxy.Type.HTTP, InetSocketAddress(proxy.url, proxy.port)))
-            proxyAuthenticator { _, response ->
-                response.request().newBuilder()
-                    .header(PROXY_AUTH_HEADER, Credentials.basic(proxy.login, proxy.password))
-                    .build()
+            // add proxy auth if exist
+            if (proxy.login != null && proxy.password != null) {
+                proxyAuthenticator { _, response ->
+                    response.request().newBuilder()
+                        .header(PROXY_AUTH_HEADER, Credentials.basic(proxy.login, proxy.password))
+                        .build()
+                }
             }
         }
-//        AllowHttp().allowHttp(this)
         allowHttp()
         // build client
         build()
