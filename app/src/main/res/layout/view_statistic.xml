@@ -38,7 +38,6 @@
         android:text="@string/main_statistic_success_attacks"
         android:textColor="@color/black"
         android:textSize="20sp"
-        android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/attacksCount" />
@@ -50,7 +49,6 @@
         android:text="@string/main_statistic_fail_attacks"
         android:textColor="@color/black"
         android:textSize="20sp"
-        android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/successAttacks" />
