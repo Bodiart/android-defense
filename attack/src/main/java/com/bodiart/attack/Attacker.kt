@@ -4,11 +4,10 @@ import android.util.Log
 import com.bodiart.attack.model.entity.data.AttackConfig
 import com.bodiart.attack.model.entity.data.RequestMethod
 import com.bodiart.attack.model.entity.data.RequestResponse
-import com.bodiart.attack.model.entity.data.WebsiteAndProxies
 import com.bodiart.attack.model.entity.data.proxy.ProxyInfo
 import com.bodiart.attack.model.entity.data.website.Website
 import com.bodiart.attack.model.usecase.AttackUseCase
-import com.bodiart.attack.model.usecase.WebsiteAndProxiesGetUseCase
+import com.bodiart.attack.model.usecase.ProxiesGetUseCase
 import io.github.bodiart.utils.util.extensions.process
 import kotlinx.coroutines.*
 
@@ -18,36 +17,38 @@ object Attacker {
     private var attackJob: Job? = null
     private var isEnabled = false
 
-    private var websiteAndProxies: WebsiteAndProxies? = null
+    private var proxies = listOf<ProxyInfo>()
 
     var attackEnableStatusCallback: ((Boolean) -> Unit)? = null
 
-    var websiteGetSuccessCallback: ((String) -> Unit)? = null
-    var websiteGetFailedCallback: ((Throwable) -> Unit)? = null
-    var websiteEmptyCallback: (() -> Unit)? = null
+    var proxiesGetSuccessCallback: ((proxyCount: Int) -> Unit)? = null
+    var proxiesGetFailedCallback: ((Throwable) -> Unit)? = null
+    var proxiesEmptyCallback: (() -> Unit)? = null
 
     var handleRequestResponseCallback: ((RequestResponse) -> Unit)? = null
     var handleRequestErrorCallback: ((url: String, Throwable) -> Unit)? = null
 
     var allThreadExecutedCallback: ((url: String) -> Unit)? = null
+    var noValidProxiesCallback: (() -> Unit)? = null
 
     fun startAttack(
         coroutineScope: CoroutineScope,
+        website: Website,
         asyncRequestCount: Int,
         delayBetweenAllThreadsExecutedMillis: Long
     ): Job {
         setEnabled(true)
         return coroutineScope.launch {
             // setup website and proxies
-            if (!setupWebsiteAndProxies()) {
-                setEnabled(false)
+            if (!setupProxies()) {
+                stopAttack()
                 return@launch
             }
             // start attack for website
-            websiteAndProxies?.let { websiteAndProxies ->
+            proxies?.let { proxies ->
                 performAttackForWebsite(
-                    websiteAndProxies.website,
-                    websiteAndProxies.proxies,
+                    website,
+                    proxies,
                     asyncRequestCount,
                     delayBetweenAllThreadsExecutedMillis,
                     this
@@ -64,31 +65,31 @@ object Attacker {
     /**
      * Returns is success
      */
-    private suspend fun setupWebsiteAndProxies(): Boolean = withContext(Dispatchers.IO) {
-        if (!handleWebsiteAndProxies(WebsiteAndProxiesGetUseCase().perform())) {
+    private suspend fun setupProxies(): Boolean = withContext(Dispatchers.IO) {
+        if (!handleProxies(ProxiesGetUseCase().perform())) {
             return@withContext false
         }
 
         // check is websites empty
-        if (websiteAndProxies == null) {
-            websiteEmptyCallback?.invoke()
+        if (proxies == null) {
+            proxiesEmptyCallback?.invoke()
             return@withContext false
         }
 
         true
     }
 
-    private fun handleWebsiteAndProxies(websiteResult: Result<WebsiteAndProxies>): Boolean {
-        websiteResult.process(
+    private fun handleProxies(proxiesResult: Result<List<ProxyInfo>>): Boolean {
+        proxiesResult.process(
             {
-                websiteAndProxies = it
-                websiteGetSuccessCallback?.invoke(it.website.url)
+                proxies = it
+                proxiesGetSuccessCallback?.invoke(proxies.size)
             },
             {
-                websiteGetFailedCallback?.invoke(it)
+                proxiesGetFailedCallback?.invoke(it)
             }
         )
-        return websiteResult.isSuccess
+        return proxiesResult.isSuccess
     }
 
     private fun performAttackForWebsite(
@@ -98,7 +99,7 @@ object Attacker {
         delayBetweenAllThreadsExecutedMillis: Long,
         coroutineScope: CoroutineScope
     ): Job {
-        return AttackUseCase().perform(
+        return AttackUseCase(
             coroutineScope,
             AttackConfig(
                 website.url,
@@ -121,8 +122,13 @@ object Attacker {
             allThreadsExecutedCallback = {
                 allThreadExecutedCallback?.invoke(it)
                 Log.d(tag, "all threads executed $it")
+            },
+            noValidProxiesCallback = {
+                noValidProxiesCallback?.invoke()
+                stopAttack()
+                Log.d(tag, "no valid proxies")
             }
-        )
+        ).perform()
     }
 
     private fun setEnabled(enabled: Boolean) {

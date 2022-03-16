@@ -7,6 +7,7 @@ class AttacksStatistic(
 ) {
 
     private val attacks = arrayListOf<AttackStat>()
+    private var proxiesCount = 0
 
     fun websiteAttacked(requestResponse: RequestResponse?, error: Throwable?) {
         attacks.add(
@@ -19,6 +20,12 @@ class AttacksStatistic(
     }
 
     fun getStatisticsAttacks(): List<AttackStat> = attacks
+
+    fun proxiesGot(proxiesCount: Int) {
+        this.proxiesCount = proxiesCount
+    }
+
+    fun getProxiesSize(): Int = proxiesCount
 }
 
 data class AttackStat(

@@ -36,8 +36,11 @@ class MainActivity : AppCompatActivity(), MainPresenter.View {
 
     private fun setupUi() {
         binding.run {
-            attackBtn.setOnClickListener { presenter.attackBtnClicked() }
+            attackBtn.setOnClickListener {
+                presenter.attackBtnClicked(websiteEditText.text.toString())
+            }
             changeSettingsBtn.setOnClickListener { presenter.changeSettingsClicked() }
+            clearWebsite.setOnClickListener { websiteEditText.setText("") }
         }
     }
 
@@ -73,6 +76,10 @@ class MainActivity : AppCompatActivity(), MainPresenter.View {
             failAttacks.text = getString(
                 R.string.main_statistic_fail_attacks,
                 statistic.getStatisticsAttacks().filter { !it.isSuccess }.size.toString()
+            )
+            proxiesCount.text = getString(
+                R.string.main_statistic_proxies_count,
+                statistic.getProxiesSize().toString()
             )
         }
     }

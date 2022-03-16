@@ -23,7 +23,7 @@ private const val BASE_URL = "https://raw.githubusercontent.com/"
 private const val PROXY_AUTH_HEADER = "Proxy-Authorization"
 
 private const val JSON_REQUESTS_TIMEOUTS = 10000L
-const val DDOS_REQUESTS_TIMEOUTS = 3000L
+const val DDOS_REQUESTS_TIMEOUTS = 1000L
 
 object RetrofitManager {
 

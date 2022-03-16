@@ -3,6 +3,7 @@ package com.bodiart.defense.features.main
 import androidx.annotation.StringRes
 import com.bodiart.attack.Attacker
 import com.bodiart.attack.model.entity.data.RequestResponse
+import com.bodiart.attack.model.entity.data.website.Website
 import com.bodiart.defense.R
 import com.bodiart.defense.model.entity.AttacksStatistic
 import com.bodiart.defense.model.settings.AttackMode
@@ -45,15 +46,17 @@ class MainPresenter {
         jobComposite.cancel()
     }
 
-    fun attackBtnClicked() {
+    fun attackBtnClicked(website: String) {
         if (isAttackerEnabled) {
             Attacker.stopAttack()
             showStatistics()
         } else {
             resetStatistic()
+            statistic = AttacksStatistic(website)
             showStatistics()
             Attacker.startAttack(
                 uiScope,
+                Website(website),
                 attackMode.asyncRequestCount,
                 attackMode.delayBetweenAllThreadsExecutedMillis
             )
@@ -70,6 +73,7 @@ class MainPresenter {
     fun settingsModeSelected(selectedMode: AttackMode) {
         attackSettingsSetUseCase.perform(selectedMode)
         setupAttackMode()
+        Attacker.stopAttack()
     }
 
     private fun showStatistics() {
@@ -86,21 +90,21 @@ class MainPresenter {
         }
     }
 
-    private fun attackerWebsitesEmpty() {
+    private fun attackerProxiesEmpty() {
         uiScope.launch { // go to main thread for sure
-            view?.showError(R.string.main_websites_empty)
+            view?.showError(R.string.main_proxies_empty)
         }
     }
 
-    private fun attackerWebsitesGetSuccess(url: String) {
+    private fun attackerProxiesGetSuccess(proxiesCount: Int) {
         uiScope.launch {
-            statistic = AttacksStatistic(url)
+            statistic?.proxiesGot(proxiesCount)
         }
     }
 
-    private fun attackerWebsitesGetFailed() {
+    private fun attackerProxiesGetFailed() {
         uiScope.launch { // go to main thread for sure
-            view?.showError(R.string.main_websites_get_failed)
+            view?.showError(R.string.main_proxies_get_failed)
         }
     }
 
@@ -122,23 +126,31 @@ class MainPresenter {
         }
     }
 
+    private fun attackerNoValidProxies() {
+        uiScope.launch {
+            view?.showError(R.string.main_no_valid_proxies)
+        }
+    }
+
     private fun subscribeToAttacker(){
         Attacker.attackEnableStatusCallback = { attackerEnableStatusChanged(it) }
-        Attacker.websiteEmptyCallback = { attackerWebsitesEmpty() }
-        Attacker.websiteGetSuccessCallback = { attackerWebsitesGetSuccess(it) }
-        Attacker.websiteGetFailedCallback = { attackerWebsitesGetFailed() }
+        Attacker.proxiesEmptyCallback = { attackerProxiesEmpty() }
+        Attacker.proxiesGetSuccessCallback = { attackerProxiesGetSuccess(it) }
+        Attacker.proxiesGetFailedCallback = { attackerProxiesGetFailed() }
         Attacker.handleRequestResponseCallback = { attackerHandleRequestResponse(it) }
         Attacker.handleRequestErrorCallback = { url, throwable -> attackerHandleRequestError(url, throwable) }
         Attacker.allThreadExecutedCallback = { attackerAllThreadsForWebsiteExecuted(it) }
+        Attacker.noValidProxiesCallback = { attackerNoValidProxies() }
     }
 
     private fun unsubscribeFromAttacker() {
         Attacker.attackEnableStatusCallback = null
-        Attacker.websiteEmptyCallback = null
-        Attacker.websiteGetFailedCallback = null
+        Attacker.proxiesEmptyCallback = null
+        Attacker.proxiesGetFailedCallback = null
         Attacker.handleRequestResponseCallback = null
         Attacker.handleRequestErrorCallback = null
         Attacker.allThreadExecutedCallback = null
+        Attacker.noValidProxiesCallback = null
     }
 
     private fun resetStatistic() {

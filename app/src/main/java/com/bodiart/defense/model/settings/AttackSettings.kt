@@ -8,7 +8,7 @@ private const val PREFERENCE_ATTACK_SETTINGS = "PREFERENCE_ATTACK_SETTINGS"
 
 object AttackSettings {
 
-    private var attackMode: AttackMode by Preference(PREFERENCE_ATTACK_SETTINGS, AttackMode.NORMAL)
+    private var attackMode: AttackMode by Preference(PREFERENCE_ATTACK_SETTINGS, AttackMode.EASY)
 
     fun getMode(): AttackMode {
         return attackMode
@@ -24,9 +24,9 @@ enum class AttackMode(
     val delayBetweenAllThreadsExecutedMillis: Long,
     @StringRes val nameResId: Int
 ) {
-    EASY(10, 3000, R.string.main_settings_easy),
-    NORMAL(20, 3000, R.string.main_settings_normal),
-    MEDIUM(30, 3000, R.string.main_settings_medium),
-    HARD(40, 3000, R.string.main_settings_hard),
-    MAX(50, 3000, R.string.main_settings_max);
+    EASY(1, 0, R.string.main_settings_easy),
+    NORMAL(2, 0, R.string.main_settings_medium),
+    MEDIUM(5, 0, R.string.main_settings_medium),
+    HARD(10, 0, R.string.main_settings_hard),
+    MAX(50, 0, R.string.main_settings_max);
 }

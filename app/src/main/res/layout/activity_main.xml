@@ -17,6 +17,35 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <EditText
+        android:id="@+id/websiteEditText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:imeOptions="actionDone"
+        android:gravity="center_vertical|start"
+        android:hint="@string/main_website_hint"
+        android:layout_marginTop="16dp"
+        android:inputType="text"
+        android:textColor="@color/black"
+        android:textColorHint="@color/secondary"
+        app:backgroundTint="@color/secondary"
+        app:layout_constraintEnd_toStartOf="@id/clearWebsite"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/clearWebsite"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="8dp"
+        android:src="@android:drawable/ic_menu_close_clear_cancel"
+        android:tint="@color/black"
+        app:layout_constraintBottom_toBottomOf="@id/websiteEditText"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/websiteEditText" />
+
     <include
         android:id="@+id/statisticInclude"
         layout="@layout/view_statistic"
@@ -25,7 +54,7 @@
         android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/websiteEditText" />
 
     <LinearLayout
         android:id="@+id/bottomLayout"
